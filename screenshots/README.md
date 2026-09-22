@@ -36,6 +36,10 @@ generic-monitoring-dashboard.png
 
 Avoid dates, usernames, hostnames, addresses, customer names, and device identifiers in filenames.
 
-## Current Status
+## Included Synthetic Example
 
-No screenshots are included in the starter repository. Future images should be added only after completing this checklist.
+![Synthetic SIEM dashboard](synthetic-siem-dashboard.png)
+
+`synthetic-siem-dashboard.png` is a portfolio mockup. Its events, hostnames, addresses, identifiers, dates, and counts are invented, and it is not a capture of a live monitoring platform.
+
+Future images should be added only after completing this checklist.
