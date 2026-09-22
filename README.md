@@ -11,17 +11,24 @@ The goal is to show what was designed, tested, observed, and learned without exp
 - Wazuh setup and security monitoring
 - Detection and response practice
 - Security+ concepts applied in a lab
+- A fully synthetic example environment with safe evidence
 
 ## Repository Map
 
+- [Completed reconstructed segmentation validation](network-segmentation/testing-results.md)
+- [Completed reconstructed Wazuh investigation](wazuh-siem/monitoring-notes.md)
+- [Reusable technical artifacts](artifacts/README.md)
 - [Network segmentation overview](network-segmentation/vlan-overview.md)
 - [Firewall rule notes](network-segmentation/firewall-rules.md)
-- [Testing results template](network-segmentation/testing-results.md)
 - [Wazuh setup notes](wazuh-siem/setup-notes.md)
-- [Wazuh monitoring notes](wazuh-siem/monitoring-notes.md)
 - [Security+ applied: network segmentation](security-plus-applied/network-segmentation.md)
 - [Security+ applied: SIEM vs. IDS](security-plus-applied/siem-vs-ids.md)
 - [Screenshot safety guide](screenshots/README.md)
+- [Synthetic lab environment](synthetic-lab/example-environment.md)
+
+## Evidence Status
+
+The completed entries are reconstructed lab simulations built from invented data. They demonstrate analysis, testing, rule design, and reporting methods without claiming to be exports from a live environment. Each entry identifies what must be rerun and replaced when an authorized lab is available.
 
 ## Public Documentation Rules
 
