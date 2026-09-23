@@ -21,7 +21,7 @@ USAGE
 }
 
 print_plan() {
-  cat <<'PLAN'
+  cat <<'PLAN_OUTPUT'
 PLAN ONLY — no traffic was sent.
 
 Suggested authorized checks:
@@ -33,7 +33,7 @@ Suggested authorized checks:
 
 Supply the real target only at execution time. The script cannot verify that
 the host running it is actually connected to the declared source zone.
-PLAN
+PLAN_OUTPUT
 }
 
 execute=false
