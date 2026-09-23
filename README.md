@@ -1,34 +1,28 @@
 # Tajallius Lab Notes
 
-This repository is a public, safety-conscious portfolio for documenting hands-on cybersecurity lab work.
+This repository contains reconstructed defensive-security case studies, reusable validation artifacts, and safe documentation practices.
 
-The goal is to show what was designed, tested, observed, and learned without exposing information that could identify or weaken a real environment.
-
-## Lab Focus
-
-- Network segmentation and trust boundaries
-- Firewall policy design and validation
-- Wazuh setup and security monitoring
-- Detection and response practice
-- Security+ concepts applied in a lab
-- A fully synthetic example environment with safe evidence
+It shows how security work can be scoped, tested, reviewed, and reported without exposing a real environment. Reconstructed exercises are clearly separated from verified checks; nothing here is presented as a live firewall or SIEM export.
 
 ## Repository Map
 
-- [Completed reconstructed segmentation validation](network-segmentation/testing-results.md)
-- [Completed reconstructed Wazuh investigation](wazuh-siem/monitoring-notes.md)
+- [Evidence matrix](EVIDENCE.md)
+- [Segmentation validation case study](network-segmentation/testing-results.md)
+- [Wazuh investigation case study](wazuh-siem/monitoring-notes.md)
 - [Reusable technical artifacts](artifacts/README.md)
 - [Network segmentation overview](network-segmentation/vlan-overview.md)
 - [Firewall rule notes](network-segmentation/firewall-rules.md)
 - [Wazuh setup notes](wazuh-siem/setup-notes.md)
-- [Security+ applied: network segmentation](security-plus-applied/network-segmentation.md)
-- [Security+ applied: SIEM vs. IDS](security-plus-applied/siem-vs-ids.md)
+- [Foundation note: network segmentation](foundations/network-segmentation.md)
+- [Foundation note: SIEM and IDS](foundations/siem-vs-ids.md)
 - [Screenshot safety guide](screenshots/README.md)
-- [Synthetic lab environment](synthetic-lab/example-environment.md)
+- [Illustrative reference architecture](illustrative-environment/reference-architecture.md)
 
-## Evidence Status
+## What Is Verified
 
-The completed entries are reconstructed lab simulations built from invented data. They demonstrate analysis, testing, rule design, and reporting methods without claiming to be exports from a live environment. Each entry identifies what must be rerun and replaced when an authorized lab is available.
+GitHub Actions checks the segmentation script's shell syntax, runs ShellCheck, confirms that its safety gates remain in place, and checks that the Wazuh rule file is well-formed XML.
+
+Those are static checks only. They do not prove that a network boundary blocked traffic, that a Wazuh manager loaded the rule, or that an alert fired. See [EVIDENCE.md](EVIDENCE.md) for the exact status of each artifact.
 
 ## Public Documentation Rules
 
@@ -41,7 +35,7 @@ This repository does not publish:
 - Unredacted logs, alerts, configuration exports, or screenshots
 - Details that could enable unauthorized access
 
-Generic labels such as `VLAN-BLUE`, `VLAN-RED`, and `VLAN-MGMT` are used in place of real network identifiers.
+Generic labels such as `VLAN-BLUE`, `VLAN-RED`, and `VLAN-MGMT` stand in for environment-specific identifiers.
 
 ## Documentation Standard
 
@@ -52,6 +46,6 @@ Each future lab entry should record:
 3. The expected behavior
 4. The sanitized observation
 5. The lesson learned
-6. The evidence reference, after a safety review
+6. The evidence reference after a safety review
 
-> This repository is for authorized lab work and defensive learning only.
+> Use these materials only on systems and networks you own or are authorized to test.

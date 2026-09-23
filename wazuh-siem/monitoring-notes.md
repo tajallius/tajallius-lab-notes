@@ -1,102 +1,72 @@
-# Wazuh Alert Investigation: Reconstructed Lab Exercise
+# Wazuh Investigation Case Study (Reconstructed)
 
-> **Evidence status:** Completed investigation against a fictional event sequence. The rule, timeline, queries, and tuning rationale are usable examples, but the alert counts and observations were reconstructed rather than exported from a live Wazuh deployment.
+> **Evidence status:** Reconstructed methodology. This entry documents an investigation and tuning workflow; it is not a live Wazuh alert export. See the [evidence matrix](../EVIDENCE.md).
 
 ## Scenario
 
-An invented source, `demo-red-01` (`10.77.30.25`), generated repeated failed authentication events for the fictional account `demo-analyst` on `demo-blue-01`. A later successful login required review because it followed the failure burst.
+A monitored system produces repeated authentication failures from one source, followed by a successful login for the same account. The analyst must decide whether the sequence reflects user error, an authorized exercise, or possible credential abuse.
 
 ## Detection Objective
 
-Escalate repeated authentication failures from the same source without turning every isolated typo into a high-severity alert.
+Escalate repeated authentication failures from the same decoded source without turning every isolated failure into a high-priority alert.
 
-The companion rule is available at [`artifacts/wazuh-local-rules.xml`](../artifacts/wazuh-local-rules.xml).
+The companion [`wazuh-local-rules.xml`](../artifacts/wazuh-local-rules.xml) is a draft rule targeting Wazuh 4.x syntax. XML well-formedness is checked in CI; Wazuh compatibility and runtime behavior remain unverified.
 
-## Reconstructed Event Timeline
+## Investigation Sequence
 
-| Time UTC | Event | Wazuh treatment |
+| Stage | Review action | Decision point |
 |---|---|---|
-| `14:35:03` | Failed login for `demo-analyst` from `10.77.30.25` | Base authentication-failure event |
-| `14:35:21` | Second failed login from the same source | Added to the correlation window |
-| `14:35:44` | Third failed login from the same source | Custom rule `100100` reached threshold |
-| `14:36:02` | Fourth failed login from the same source | Covered by the alert suppression period |
-| `14:36:38` | Successful login for `demo-analyst` | Analyst review required |
+| Initial event | Confirm the event source, decoder, timestamp, account field, and source-address field | Are the normalized fields trustworthy? |
+| Correlation window | Group failures by source, account, destination, and time window | Does the sequence exceed the documented threshold? |
+| Successful login | Compare the later session with the failure burst | Was the login expected and attributable to an authorized user? |
+| Endpoint context | Review process, session, and authentication telemetry | Is there evidence of execution, persistence, or lateral movement? |
+| Response | Contain only when evidence and business context justify it | Would automated blocking create an avoidable lockout? |
 
-## Example Alert Summary
+## Query Templates
 
-```json
-{
-  "rule_id": "100100",
-  "rule_level": 10,
-  "description": "Lab simulation: repeated authentication failures for demo-analyst from 10.77.30.25",
-  "agent": "demo-blue-01",
-  "source_ip": "10.77.30.25",
-  "destination_user": "demo-analyst",
-  "failure_count": 3,
-  "window_seconds": 120,
-  "mitre_technique": "T1110",
-  "evidence_note": "Invented alert for a reconstructed exercise"
-}
-```
-
-## Investigation Query
-
-The following Discover query narrows the reconstructed dataset to the custom alert and source:
+Adapt field names to the installed decoder and index mapping:
 
 ```text
-rule.id:100100 AND data.srcip:"10.77.30.25"
+rule.id:<custom-rule-id> AND data.srcip:<sanitized-source>
 ```
-
-The surrounding authentication activity can be reviewed with:
 
 ```text
-agent.name:"demo-blue-01" AND data.dstuser:"demo-analyst" AND @timestamp:[now-15m TO now]
+agent.name:<sanitized-agent> AND data.dstuser:<sanitized-account> AND @timestamp:[now-15m TO now]
 ```
 
-Field availability depends on the decoder and data source, so these queries must be adjusted to the actual indexed document.
+These are query patterns, not exported results.
 
-## Analyst Assessment
+## Tuning Rationale
 
-- The failures shared one source address, one destination asset, and one account within a short interval.
-- The successful login after the failure burst increased the priority of the review.
-- No real reputation, identity, or endpoint context exists in this reconstruction, so the scenario cannot support a true compromise determination.
-- In a live lab, the next checks would include the source asset owner, process ancestry, endpoint telemetry, session activity, and whether the login was expected.
+The draft rule uses a threshold and time window so isolated failures remain searchable while a repeated sequence can be escalated. A same-source condition reduces unrelated aggregation, and a suppression interval may reduce duplicate alerts after the threshold.
 
-## Tuning Exercise
+Before using that logic, validate:
 
-### Initial behavior
+- The installed Wazuh version
+- The correct parent rule for the actual authentication source
+- Availability and meaning of decoded `srcip` and `dstuser` fields
+- Threshold behavior with representative sanitized events
+- Alert level, MITRE mapping, and suppression behavior
+- False-positive impact on shared addresses and legitimate user mistakes
 
-The fictional first draft raised a medium alert for every authentication failure. In a reconstructed dataset of 34 events, 31 were isolated failures and three belonged to the burst. That produced excessive noise.
+## Response Decision Framework
 
-### Revised behavior
+Do not treat the rule match alone as proof of compromise. Review identity context, source ownership, endpoint telemetry, session activity, and whether the behavior was expected. Containment should be proportionate to the available evidence.
 
-The custom rule raises a level 10 alert after three events that matched parent rule `5503` within 120 seconds. The `same_srcip` correlation requires a common decoded source address, and `ignore="60"` reduces duplicate alerts after the threshold is reached.
+## Runtime Verification Plan
 
-### Reconstructed before-and-after result
+1. Place the rule in a test Wazuh manager's local rules file.
+2. Run `wazuh-logtest` with sanitized representative authentication events.
+3. Confirm the selected parent rule and decoded fields.
+4. Verify the threshold, correlation, description, level, MITRE mapping, and suppression behavior.
+5. Record Wazuh and ruleset versions.
+6. Retain original evidence privately and publish only a sanitized result.
 
-| Measure | Before tuning | After tuning |
-|---|---:|---:|
-| Individual failure alerts requiring review | 34 | 0 high-priority alerts |
-| Correlated high-priority alerts | 0 | 1 |
-| Events retained for search | 34 | 34 |
-| High-priority reduction | — | 97% fewer items in the analyst queue |
+## Current Result
 
-The reduction applies only to this invented dataset; it is not a measured production result.
-
-## Response Decision
-
-For the reconstructed scenario, the analyst would contain the source only after confirming that the successful login was unauthorized. Immediate automated blocking was not selected because the exercise lacks identity context and could otherwise lock out a legitimate user after repeated mistakes.
-
-## Verification Plan
-
-1. Place the example rule in a test Wazuh manager's local rules file.
-2. Run `wazuh-logtest` with sanitized sample authentication events.
-3. Confirm that the parent event includes decoded `srcip` and `dstuser` fields.
-4. Verify one correlated alert after the third matching failure.
-5. Confirm the alert description, level, MITRE mapping, and suppression behavior.
-6. Replace reconstructed counts with actual sanitized test results.
+Runtime validation is pending. No alert count, noise-reduction percentage, or successful correlation is claimed.
 
 ## References
 
-- [Wazuh custom rules documentation](https://documentation.wazuh.com/current/user-manual/ruleset/rules/custom.html)
+- [Wazuh custom rules](https://documentation.wazuh.com/current/user-manual/ruleset/rules/custom.html)
 - [Wazuh ruleset XML syntax](https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html)

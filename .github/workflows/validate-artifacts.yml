@@ -1,0 +1,57 @@
+name: Validate artifacts
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install validators
+        run: sudo apt-get update && sudo apt-get install -y shellcheck libxml2-utils
+
+      - name: Check shell syntax
+        run: bash -n artifacts/segmentation-validation.sh
+
+      - name: Run ShellCheck
+        run: shellcheck artifacts/segmentation-validation.sh
+
+      - name: Check Wazuh XML structure
+        run: xmllint --noout artifacts/wazuh-local-rules.xml
+
+      - name: Check plan-only safety controls
+        shell: bash
+        run: |
+          output="$(bash artifacts/segmentation-validation.sh)"
+          grep -q "PLAN ONLY" <<<"$output"
+          ! grep -q "10\\.77\\." artifacts/segmentation-validation.sh
+          if bash artifacts/segmentation-validation.sh \
+            --execute \
+            --test-id CI-GATE \
+            --source-zone VLAN-CI \
+            --destination-label CI-TARGET \
+            --protocol tcp \
+            --target ci-target.local \
+            --port 443 \
+            --expect deny; then
+            echo "Execution without --authorized unexpectedly succeeded" >&2
+            exit 1
+          fi
+          if bash artifacts/segmentation-validation.sh \
+            --test-id CI-PLACEHOLDER \
+            --source-zone VLAN-CI \
+            --destination-label CI-TARGET \
+            --protocol tcp \
+            --target REPLACE_ME \
+            --port 443 \
+            --expect deny; then
+            echo "Placeholder target unexpectedly passed validation" >&2
+            exit 1
+          fi

@@ -1,21 +1,44 @@
 # Technical Artifacts
 
-These artifacts support the reconstructed lab exercises in this repository. They use invented addresses and identifiers and must be tested in an authorized lab before deployment.
+These files support the reconstructed case studies in this repository. Their exact evidence status is tracked in [`EVIDENCE.md`](../EVIDENCE.md).
 
-## Files
+## Segmentation Validation Script
 
-- [`segmentation-validation.sh`](segmentation-validation.sh) — a dry-run-by-default checklist for five cross-zone reachability tests. It sends traffic only when called with `--execute`.
-- [`wazuh-local-rules.xml`](wazuh-local-rules.xml) — an example Wazuh correlation rule for repeated authentication failures from the same decoded source address.
+[`segmentation-validation.sh`](segmentation-validation.sh) is plan-only by default. It contains no target addresses and executes one explicit check at a time.
 
-## Safety Notes
+```text
+./artifacts/segmentation-validation.sh \
+  --test-id SEG-001 \
+  --source-zone VLAN-MGMT \
+  --destination-label VLAN-BLUE \
+  --protocol https \
+  --target <authorized-target> \
+  --port 443 \
+  --expect allow
+```
 
-- Review every target before using `--execute`.
-- Use only on systems and networks you own or have permission to test.
-- Confirm Wazuh parent rule IDs and decoded fields in the installed version.
-- Run Wazuh rules through `wazuh-logtest` before loading them.
-- Keep real logs and infrastructure details outside the public repository.
+Review the plan, confirm the execution point is in the declared source zone, then add both `--execute` and `--authorized`. The target is supplied by the operator and is never committed here.
 
-The Wazuh custom-rule ID range and syntax follow the current official documentation:
+For an expected deny, a failed connection is not enough to prove the firewall caused it. Corroborate the result with the gateway rule, action, source zone, destination zone, and timestamp.
 
-- [Custom rules](https://documentation.wazuh.com/current/user-manual/ruleset/rules/custom.html)
-- [Ruleset XML syntax](https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html)
+## Wazuh Rule
+
+[`wazuh-local-rules.xml`](wazuh-local-rules.xml) is a draft Wazuh 4.x custom rule for correlating repeated authentication failures from one decoded source address.
+
+Before loading it, confirm the parent rule ID and decoded fields in the installed Wazuh version, then test representative sanitized events with `wazuh-logtest`.
+
+## Validation Status
+
+| Check | Automated in CI | Requires an authorized environment |
+|---|---|---|
+| Shell syntax and ShellCheck | Yes | No |
+| Script plan-only and authorization gates | Yes | No |
+| Wazuh XML well-formedness | Yes | No |
+| Network allow/deny behavior | No | Yes |
+| Gateway-log corroboration | No | Yes |
+| Wazuh rule loading, correlation, and suppression | No | Yes |
+
+## References
+
+- [Wazuh custom rules](https://documentation.wazuh.com/current/user-manual/ruleset/rules/custom.html)
+- [Wazuh ruleset XML syntax](https://documentation.wazuh.com/current/user-manual/ruleset/ruleset-xml-syntax/rules.html)
