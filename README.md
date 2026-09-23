@@ -4,6 +4,12 @@ This repository contains reconstructed defensive-security case studies, reusable
 
 It shows how security work can be scoped, tested, reviewed, and reported without exposing a real environment. Reconstructed exercises are clearly separated from verified checks; nothing here is presented as a live firewall or SIEM export.
 
+## Project Status and Claim Boundaries
+
+The concentrated early commit sequence represents the initial import and foundation build for this public repository. Its timing should not be read as evidence of a long-running public contribution history; sustained work will be visible only as the project develops over time.
+
+This is a lab-based educational and publication portfolio. It demonstrates documented methodology, reconstructed exercises, reusable artifacts, and the static checks listed below. It is not evidence that consulting services were delivered to clients. Any future claim about a real engagement should be made only when it can be supported by authorized, sanitized evidence; otherwise the work should continue to be described as lab, educational, or publication work.
+
 ## Repository Map
 
 - [Evidence matrix](EVIDENCE.md)
